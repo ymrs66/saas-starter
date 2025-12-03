@@ -1,6 +1,6 @@
 import { desc, eq, and, like, or, sql } from 'drizzle-orm';
 import { db } from './drizzle';
-import { articles, categories, articleTags, users } from './schema';
+import { articles, categories, articleTags, users, teamMembers } from './schema';
 import type { Article, ArticleWithDetails, Category } from './schema';
 
 /**
@@ -13,6 +13,7 @@ export async function getArticles(options: {
   limit?: number;
   status?: string;
   userId?: number;
+  teamId?: number;
   categoryId?: number;
   search?: string;
   includePublicOnly?: boolean;
@@ -34,6 +35,10 @@ export async function getArticles(options: {
 
   if (options.userId) {
     conditions.push(eq(articles.userId, options.userId));
+  }
+
+  if (options.teamId) {
+    conditions.push(eq(articles.teamId, options.teamId));
   }
 
   if (options.categoryId) {
@@ -157,6 +162,7 @@ export async function getArticleById(
 export async function createArticle(
   articleData: {
     userId: number;
+    teamId: number;
     title: string;
     slug: string;
     content: string;
@@ -272,7 +278,7 @@ export async function createCategory(categoryData: {
 }
 
 /**
- * ユーザーが記事にアクセスできるかチェックする
+ * ユーザーが記事にアクセスできるかチェックする（閲覧権限）
  * @param articleId - 記事のID
  * @param userId - ユーザーのID
  * @returns アクセス可能な場合true
@@ -282,7 +288,7 @@ export async function canUserAccessArticle(
   userId: number
 ): Promise<boolean> {
   const article = await db
-    .select({ userId: articles.userId, status: articles.status })
+    .select({ teamId: articles.teamId, status: articles.status })
     .from(articles)
     .where(eq(articles.id, articleId))
     .limit(1);
@@ -296,12 +302,23 @@ export async function canUserAccessArticle(
     return true;
   }
 
-  // 下書き・非公開記事は作成者のみアクセス可能
-  return article[0].userId === userId;
+  // 下書き・非公開記事はチームメンバーのみアクセス可能
+  const membership = await db
+    .select()
+    .from(teamMembers)
+    .where(
+      and(
+        eq(teamMembers.userId, userId),
+        eq(teamMembers.teamId, article[0].teamId)
+      )
+    )
+    .limit(1);
+
+  return membership.length > 0;
 }
 
 /**
- * ユーザーが記事を編集・削除できるかチェックする
+ * ユーザーが記事を編集・削除できるかチェックする（編集権限）
  * @param articleId - 記事のID
  * @param userId - ユーザーのID
  * @returns 編集可能な場合true
@@ -311,7 +328,7 @@ export async function canUserModifyArticle(
   userId: number
 ): Promise<boolean> {
   const article = await db
-    .select({ userId: articles.userId })
+    .select({ teamId: articles.teamId })
     .from(articles)
     .where(eq(articles.id, articleId))
     .limit(1);
@@ -320,6 +337,17 @@ export async function canUserModifyArticle(
     return false;
   }
 
-  // 記事の作成者のみ編集可能
-  return article[0].userId === userId;
+  // チームメンバーのみ編集可能
+  const membership = await db
+    .select()
+    .from(teamMembers)
+    .where(
+      and(
+        eq(teamMembers.userId, userId),
+        eq(teamMembers.teamId, article[0].teamId)
+      )
+    )
+    .limit(1);
+
+  return membership.length > 0;
 }

@@ -59,6 +59,7 @@ export default async function ArticlesPage({
     limit: 10,
     status,
     search,
+    teamId: team.id,
   });
 
   return (

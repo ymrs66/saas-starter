@@ -72,6 +72,7 @@ export const teamsRelations = relations(teams, ({ many }) => ({
   teamMembers: many(teamMembers),
   activityLogs: many(activityLogs),
   invitations: many(invitations),
+  articles: many(articles),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -133,6 +134,9 @@ export const articles = pgTable('articles', {
   userId: integer('user_id')
     .notNull()
     .references(() => users.id),
+  teamId: integer('team_id')
+    .notNull()
+    .references(() => teams.id),
   title: varchar('title', { length: 500 }).notNull(),
   slug: varchar('slug', { length: 500 }).notNull().unique(),
   content: text('content').notNull(),
@@ -164,6 +168,10 @@ export const articlesRelations = relations(articles, ({ one, many }) => ({
   author: one(users, {
     fields: [articles.userId],
     references: [users.id],
+  }),
+  team: one(teams, {
+    fields: [articles.teamId],
+    references: [teams.id],
   }),
   category: one(categories, {
     fields: [articles.categoryId],

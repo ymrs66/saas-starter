@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm exec tsc:*)",
+      "Bash(pnpm db:migrate:*)",
+      "Bash(docker compose:*)",
+      "Bash(powershell -Command \"Get-Process | Where-Object {$_ProcessName -match ''node''} | Select-Object ProcessName, Id, StartTime | Format-Table\")",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

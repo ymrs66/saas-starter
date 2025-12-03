@@ -9,6 +9,10 @@ import {
   UserMinus,
   Mail,
   CheckCircle,
+  FileText,
+  Edit,
+  Trash2,
+  Eye,
   type LucideIcon,
 } from 'lucide-react';
 import { ActivityType } from '@/lib/db/schema';
@@ -25,6 +29,10 @@ const iconMap: Record<ActivityType, LucideIcon> = {
   [ActivityType.REMOVE_TEAM_MEMBER]: UserMinus,
   [ActivityType.INVITE_TEAM_MEMBER]: Mail,
   [ActivityType.ACCEPT_INVITATION]: CheckCircle,
+  [ActivityType.CREATE_ARTICLE]: FileText,
+  [ActivityType.UPDATE_ARTICLE]: Edit,
+  [ActivityType.DELETE_ARTICLE]: Trash2,
+  [ActivityType.PUBLISH_ARTICLE]: Eye,
 };
 
 function getRelativeTime(date: Date) {
@@ -63,6 +71,14 @@ function formatAction(action: ActivityType): string {
       return 'You invited a team member';
     case ActivityType.ACCEPT_INVITATION:
       return 'You accepted an invitation';
+    case ActivityType.CREATE_ARTICLE:
+      return 'You created an article';
+    case ActivityType.UPDATE_ARTICLE:
+      return 'You updated an article';
+    case ActivityType.DELETE_ARTICLE:
+      return 'You deleted an article';
+    case ActivityType.PUBLISH_ARTICLE:
+      return 'You published an article';
     default:
       return 'Unknown action occurred';
   }
@@ -91,8 +107,8 @@ export default async function ActivityPage() {
 
                 return (
                   <li key={log.id} className="flex items-center space-x-4">
-                    <div className="bg-orange-100 rounded-full p-2">
-                      <Icon className="w-5 h-5 text-orange-600" />
+                    <div className="bg-primary/10 rounded-full p-2">
+                      <Icon className="w-5 h-5 text-primary" />
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium text-foreground">
@@ -109,7 +125,7 @@ export default async function ActivityPage() {
             </ul>
           ) : (
             <div className="flex flex-col items-center justify-center text-center py-12">
-              <AlertCircle className="h-12 w-12 text-orange-500 mb-4" />
+              <AlertCircle className="h-12 w-12 text-primary mb-4" />
               <h3 className="text-lg font-semibold text-foreground mb-2">
                 No activity yet
               </h3>

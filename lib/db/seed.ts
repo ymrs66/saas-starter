@@ -1,6 +1,6 @@
 import { stripe } from '../payments/stripe';
 import { db } from './drizzle';
-import { users, teams, teamMembers } from './schema';
+import { users, teams, teamMembers, categories } from './schema';
 import { hashPassword } from '@/lib/auth/session';
 
 async function createStripeProducts() {
@@ -69,6 +69,31 @@ async function seed() {
     userId: user.id,
     role: 'owner',
   });
+
+  console.log('Creating initial categories...');
+  await db.insert(categories).values([
+    {
+      name: 'Technology',
+      slug: 'technology',
+    },
+    {
+      name: 'Business',
+      slug: 'business',
+    },
+    {
+      name: 'Design',
+      slug: 'design',
+    },
+    {
+      name: 'Development',
+      slug: 'development',
+    },
+    {
+      name: 'Marketing',
+      slug: 'marketing',
+    },
+  ]);
+  console.log('Initial categories created.');
 
   await createStripeProducts();
 }

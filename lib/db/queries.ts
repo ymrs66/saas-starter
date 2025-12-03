@@ -128,3 +128,13 @@ export async function getTeamForUser() {
 
   return result?.team || null;
 }
+
+export async function getTeamMembership(userId: number, teamId: number) {
+  const result = await db
+    .select()
+    .from(teamMembers)
+    .where(and(eq(teamMembers.userId, userId), eq(teamMembers.teamId, teamId)))
+    .limit(1);
+
+  return result.length > 0 ? result[0] : null;
+}

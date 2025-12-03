@@ -15,20 +15,7 @@ import {
 } from '@/lib/validations/article';
 import { ActivityType } from '@/lib/db/schema';
 import type { ActionState } from '@/lib/auth/middleware';
-
-/**
- * スラッグを生成するヘルパー関数
- * @param title - 記事のタイトル
- * @returns URLフレンドリーなスラッグ
- */
-function generateSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
+import { generateSlug, parseTagsString } from '@/lib/utils';
 
 /**
  * 記事作成アクション
@@ -61,18 +48,13 @@ export async function createArticleAction(
     const { title, slug, content, excerpt, categoryId, status, tags, publishNow } =
       result.data;
 
-    const tags_array = tags
-      ? tags
-          .split(',')
-          .map((tag) => tag.trim())
-          .filter((tag) => tag.length > 0)
-      : [];
-
+    const tagsArray = parseTagsString(tags);
     const shouldPublish = status === 'published' || publishNow === 'true';
 
     const article = await createArticle(
       {
         userId: user.id,
+        teamId: team.id,
         title,
         slug,
         content,
@@ -81,7 +63,7 @@ export async function createArticleAction(
         status: shouldPublish ? 'published' : status,
         publishedAt: shouldPublish ? new Date() : undefined,
       },
-      tags_array
+      tagsArray
     );
 
     revalidatePath('/dashboard/articles');
@@ -127,13 +109,7 @@ export async function updateArticleAction(
     const { title, slug, content, excerpt, categoryId, status, tags, publishNow } =
       result.data;
 
-    const tags_array = tags
-      ? tags
-          .split(',')
-          .map((tag) => tag.trim())
-          .filter((tag) => tag.length > 0)
-      : [];
-
+    const tagsArray = parseTagsString(tags);
     const article = await getArticleById(id);
     const shouldPublish =
       (status === 'published' || publishNow === 'true') && !article?.publishedAt;
@@ -149,7 +125,7 @@ export async function updateArticleAction(
         status: shouldPublish ? 'published' : status,
         publishedAt: shouldPublish ? new Date() : undefined,
       },
-      tags_array
+      tagsArray
     );
 
     revalidatePath('/dashboard/articles');

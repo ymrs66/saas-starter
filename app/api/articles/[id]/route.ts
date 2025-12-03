@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getArticleById } from '@/lib/db/articles-queries';
+import { getArticleById, canUserAccessArticle } from '@/lib/db/articles-queries';
+import { getUser } from '@/lib/db/queries';
 
 /**
  * GET /api/articles/[id]
@@ -30,6 +31,25 @@ export async function GET(
         { error: '記事が見つかりません' },
         { status: 404 }
       );
+    }
+
+    // 非公開記事の場合は権限チェック
+    if (article.status !== 'published') {
+      const user = await getUser();
+      if (!user) {
+        return NextResponse.json(
+          { error: '認証が必要です' },
+          { status: 401 }
+        );
+      }
+
+      const canAccess = await canUserAccessArticle(articleId, user.id);
+      if (!canAccess) {
+        return NextResponse.json(
+          { error: 'この記事にアクセスする権限がありません' },
+          { status: 403 }
+        );
+      }
     }
 
     return NextResponse.json(article);

@@ -34,10 +34,10 @@ type ArticleListProps = {
  * ステータスバッジコンポーネント
  */
 function StatusBadge({ status }: { status: string }) {
-  const variants: Record<string, 'default' | 'success' | 'secondary'> = {
-    published: 'success',
+  const variants: Record<string, 'default' | 'secondary' | 'outline'> = {
+    published: 'default',
     draft: 'secondary',
-    unpublished: 'default',
+    unpublished: 'outline',
   };
 
   const labels: Record<string, string> = {
