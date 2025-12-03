@@ -118,4 +118,4 @@ While this template is intentionally minimal and to be used as a learning resour
 - https://zerotoshipped.com
 - https://turbostarter.dev
 
-テスト用の行を追加しました。
+git switch -c test-readme
